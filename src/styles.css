@@ -1,3 +1,232 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+@import '@fontsource/roboto/400.css';
+@import '@fontsource/roboto/500.css';
+@import '@fontsource/roboto/700.css';
+
+/*
+ * SGT design tokens. Source: Figma "General Style Guidelines" and
+ * "Web & Mobile Style Guidelines". Light mode only.
+ *
+ * Primitives never change between modes. Semantic tokens point to
+ * primitives and are the only values components should use.
+ */
+@theme static {
+  /* Remove Tailwind defaults; only the design system exists. */
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+
+  /* ---------- Primitives ---------- */
+  --color-teal-50: #e6f5f3;
+  --color-teal-100: #c2e8e3;
+  --color-teal-200: #8fd3cb;
+  --color-teal-300: #55b9ae;
+  --color-teal-400: #2a9e92;
+  --color-teal-500: #128579;
+  --color-teal-600: #0e6e66;
+  --color-teal-700: #0b5853;
+  --color-teal-800: #094541;
+  --color-teal-900: #062f2d;
+
+  --color-navy-50: #eaf0f8;
+  --color-navy-100: #c9d7ec;
+  --color-navy-200: #94acd6;
+  --color-navy-300: #5e80bb;
+  --color-navy-400: #3a5fa0;
+  --color-navy-500: #274888;
+  --color-navy-600: #1e3a70;
+  --color-navy-700: #182e5a;
+  --color-navy-800: #122344;
+  --color-navy-900: #0b172d;
+
+  --color-leaf-50: #f0f7e6;
+  --color-leaf-100: #dceec3;
+  --color-leaf-200: #bee08f;
+  --color-leaf-300: #9bcb5b;
+  --color-leaf-400: #7db43a;
+  --color-leaf-500: #629a2a;
+  --color-leaf-600: #4e7c22;
+  --color-leaf-700: #3d611c;
+  --color-leaf-800: #2e4a16;
+  --color-leaf-900: #1f3210;
+
+  --color-sky-50: #eaf4fc;
+  --color-sky-100: #cfe5f7;
+  --color-sky-200: #a5ceee;
+  --color-sky-300: #7bb6e4;
+  --color-sky-400: #5aa0d8;
+  --color-sky-500: #3f88c5;
+  --color-sky-600: #2f6ea5;
+  --color-sky-700: #265a88;
+  --color-sky-800: #1d466a;
+  --color-sky-900: #132e45;
+
+  --color-gray-0: #ffffff;
+  --color-gray-50: #f5f7f9;
+  --color-gray-100: #eceff3;
+  --color-gray-200: #dce1e8;
+  --color-gray-300: #c3cad4;
+  --color-gray-400: #9aa4b2;
+  --color-gray-500: #67727f;
+  --color-gray-600: #525d6c;
+  --color-gray-700: #3a4451;
+  --color-gray-800: #262e38;
+  --color-gray-900: #151a21;
+
+  --color-amber-50: #fff6da;
+  --color-amber-100: #ffe9a8;
+  --color-amber-500: #e0a100;
+  --color-amber-700: #8a6100;
+  --color-amber-900: #4d3600;
+
+  --color-red-50: #fdecec;
+  --color-red-100: #f9cfcf;
+  --color-red-400: #e86a6a;
+  --color-red-600: #c03a3a;
+  --color-red-700: #a12a2a;
+  --color-red-900: #5c1616;
+
+  /* ---------- Semantic: brand ---------- */
+  --color-brand-primary: var(--color-teal-600);
+  --color-brand-primary-hover: var(--color-teal-700);
+  --color-brand-primary-pressed: var(--color-teal-800);
+  --color-brand-primary-subtle: var(--color-teal-50);
+  --color-brand-secondary: var(--color-navy-700);
+  --color-brand-secondary-hover: var(--color-navy-800);
+  --color-brand-secondary-pressed: var(--color-navy-900);
+  --color-brand-accent: var(--color-leaf-500);
+
+  /* ---------- Semantic: text ---------- */
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-600);
+  --color-text-placeholder: var(--color-gray-500);
+  --color-text-disabled: var(--color-gray-400);
+  --color-text-link: var(--color-teal-700);
+  --color-text-link-hover: var(--color-teal-800); /* not in Figma */
+  --color-text-link-pressed: var(--color-teal-900); /* not in Figma */
+  --color-text-on-primary: var(--color-gray-0);
+  --color-text-on-inverse: var(--color-gray-0);
+
+  /* ---------- Semantic: background ---------- */
+  --color-bg-page: var(--color-gray-50);
+  --color-bg-surface: var(--color-gray-0);
+  --color-bg-muted: var(--color-gray-100);
+  --color-bg-disabled: var(--color-gray-100);
+  --color-bg-inverse: var(--color-navy-900);
+
+  /* ---------- Semantic: border ---------- */
+  --color-border-default: var(--color-gray-200);
+  --color-border-strong: var(--color-gray-400);
+  --color-border-focus: var(--color-sky-500);
+
+  /* ---------- Semantic: status ---------- */
+  --color-status-success: var(--color-leaf-600);
+  --color-status-success-subtle: var(--color-leaf-50);
+  --color-status-success-text: var(--color-leaf-700);
+
+  --color-status-info: var(--color-sky-600);
+  --color-status-info-subtle: var(--color-sky-50);
+  --color-status-info-text: var(--color-sky-700);
+
+  --color-status-warning: var(--color-amber-500);
+  --color-status-warning-subtle: var(--color-amber-50);
+  --color-status-warning-text: var(--color-amber-700);
+
+  --color-status-error: var(--color-red-600);
+  --color-status-error-hover: var(--color-red-700);
+  --color-status-error-pressed: var(--color-red-900);
+  --color-status-error-subtle: var(--color-red-50);
+  --color-status-error-text: var(--color-red-700);
+
+  --color-status-neutral: var(--color-gray-600);
+  --color-status-neutral-subtle: var(--color-gray-100);
+  --color-status-neutral-text: var(--color-gray-700);
+
+  /* ---------- Semantic: map & overlay ---------- */
+  --color-map-terreno-borrador: var(--color-gray-200);
+  --color-map-relleno-borrador: #dce1e84d;
+  --color-map-terreno-validado: var(--color-leaf-300);
+  --color-map-relleno-validado: #9bcb5b4d;
+  --color-map-terreno-seleccionado: var(--color-gray-0);
+  --color-map-relleno-seleccionado: #ffffff66;
+  --color-overlay-scrim: #0b172d8c;
+
+  /* ---------- Typography ---------- */
+  --font-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+
+  --text-h1: 2rem;
+  --text-h1--line-height: 2.5rem;
+  --text-h1--font-weight: 700;
+  --text-h2: 1.5rem;
+  --text-h2--line-height: 2rem;
+  --text-h2--font-weight: 700;
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.75rem;
+  --text-h3--font-weight: 500;
+  --text-h4: 1.125rem;
+  --text-h4--line-height: 1.5rem;
+  --text-h4--font-weight: 500;
+
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.75rem;
+  --text-body-lg--font-weight: 400;
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.5rem;
+  --text-body-md--font-weight: 400;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.25rem;
+  --text-body-sm--font-weight: 400;
+
+  --text-label-lg: 1rem;
+  --text-label-lg--line-height: 1.5rem;
+  --text-label-lg--font-weight: 500;
+  --text-label-md: 0.875rem;
+  --text-label-md--line-height: 1.25rem;
+  --text-label-md--font-weight: 500;
+  --text-label-sm: 0.75rem;
+  --text-label-sm--line-height: 1rem;
+  --text-label-sm--font-weight: 500;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-caption--font-weight: 400;
+
+  /* ---------- Spacing (4 px base; numeric scale stays: p-1 = 4px) ---------- */
+  --spacing: 0.25rem;
+  --spacing-2xs: 0.125rem;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.75rem;
+  --spacing-lg: 1rem;
+  --spacing-xl: 1.5rem;
+  --spacing-2xl: 2rem;
+  --spacing-3xl: 3rem;
+  --spacing-4xl: 4rem;
+
+  /* ---------- Radius ---------- */
+  --radius-none: 0;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 999px;
+
+  /* ---------- Shadows ---------- */
+  --shadow-sm: 0 1px 2px 0 #151a2114;
+  --shadow-md: 0 2px 4px 0 #151a210f, 0 6px 16px 0 #151a211a;
+  --shadow-lg: 0 4px 8px 0 #151a2114, 0 16px 32px 0 #151a2124;
+
+  /* ---------- Layout ---------- */
+  --container-content: 75rem; /* 1200px web max content width */
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-page);
+  }
+}
