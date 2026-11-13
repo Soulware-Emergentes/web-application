@@ -8,6 +8,11 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
   </head>
   <body>
-    <app-root></app-root>
+    <!-- The splash the app keeps showing until a route renders; see Splash. -->
+    <app-root>
+      <div class="app-splash" role="status" aria-label="Loading">
+        <span class="app-splash__spinner" aria-hidden="true"></span>
+      </div>
+    </app-root>
   </body>
 </html>

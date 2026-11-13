@@ -1,0 +1,28 @@
+{
+  "welcome": {
+    "title": "Te damos la bienvenida a SGT",
+    "description": "Inicia sesión con tu cuenta institucional para continuar.",
+    "signIn": "Iniciar sesión"
+  },
+  "signingIn": {
+    "title": "Redirigiendo al inicio de sesión",
+    "description": "Necesitas iniciar sesión con tu cuenta institucional para continuar."
+  },
+  "signingOut": {
+    "title": "Cerrando sesión",
+    "description": "Estamos cerrando tu sesión. Tendrás que iniciar sesión de nuevo para continuar."
+  },
+  "callback": {
+    "failed": "No se pudo completar el inicio de sesión.",
+    "retry": "Intentar de nuevo"
+  },
+  "tokenDetails": {
+    "title": "Tu sesión",
+    "idToken": "Token de identidad",
+    "accessToken": "Token de acceso",
+    "signOut": "Cerrar sesión"
+  },
+  "splash": {
+    "loading": "Cargando"
+  }
+}
