@@ -16,7 +16,7 @@ import { SIGNED_OUT_PARAMETER } from './identity.guard';
     @if (failed()) {
       <main class="flex min-h-screen items-center justify-center p-lg">
         <div
-          class="rounded-lg border border-status-error bg-status-error-subtle px-lg py-md text-label-md text-status-error-text"
+          class="flex flex-wrap items-center gap-sm rounded-lg border border-status-error bg-status-error-subtle px-lg py-md text-label-md text-status-error-text"
           role="alert"
         >
           {{ 'callback.failed' | transloco }}
