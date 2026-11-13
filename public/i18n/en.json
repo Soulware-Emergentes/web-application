@@ -1,0 +1,28 @@
+{
+  "welcome": {
+    "title": "Welcome to SGT",
+    "description": "Sign in with your institutional account to continue.",
+    "signIn": "Sign in"
+  },
+  "signingIn": {
+    "title": "Redirecting to sign in",
+    "description": "You need to sign in with your institutional account to continue."
+  },
+  "signingOut": {
+    "title": "Signing out",
+    "description": "Ending your session. You will need to sign in again to continue."
+  },
+  "callback": {
+    "failed": "Sign-in could not be completed.",
+    "retry": "Try again"
+  },
+  "tokenDetails": {
+    "title": "Your session",
+    "idToken": "ID token",
+    "accessToken": "Access token",
+    "signOut": "Sign out"
+  },
+  "splash": {
+    "loading": "Loading"
+  }
+}
