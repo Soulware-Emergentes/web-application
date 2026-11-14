@@ -24,5 +24,83 @@
   },
   "splash": {
     "loading": "Cargando"
+  },
+  "shell": {
+    "navigation": "Navegación",
+    "map": "Mapa",
+    "session": "Sesión",
+    "collapseNavigation": "Contraer menú",
+    "expandNavigation": "Expandir menú"
+  },
+  "plotMap": {
+    "createPlot": "Crear terreno",
+    "goToDraft": "Ir al terreno en creación",
+    "refused": "Registro rechazado: el terreno se superpone con {{count}} terreno(s) registrado(s), remarcados en el mapa.",
+    "dismissRefusal": "Cerrar aviso",
+    "draftClear": "Crear terreno: sin cruces",
+    "draftCrossing": "Crear terreno: se cruza con un terreno registrado"
+  },
+  "plotRegistered": {
+    "title": "Terreno registrado",
+    "message": "Ya aparece en el mapa, resaltado en verde por unos segundos.",
+    "close": "Entendido"
+  },
+  "createPlot": {
+    "title": "Crear terreno",
+    "close": "Cerrar",
+    "plotData": "Datos del terreno",
+    "beneficiaryName": "Nombre del beneficiario",
+    "beneficiaryNamePlaceholder": "Se completa al validar el documento",
+    "area": "Área estimada (ha)",
+    "areaPlaceholder": "Se calcula con los vértices",
+    "areaHint": "Calculada a partir del perímetro registrado",
+    "preview": "Vista previa del perímetro",
+    "previewLabel": "Contorno del perímetro ingresado",
+    "previewEmpty": "Aparece al ingresar al menos 3 vértices",
+    "perimeter": "Perímetro del terreno",
+    "perimeterHint": "Cargue el archivo de la estación total o ingrese los vértices a mano. El perímetro se cierra uniendo el último vértice con el primero.",
+    "stationFile": "Arrastre aquí el archivo de la estación total",
+    "stationFileHint": "o seleccione un archivo .csv o .txt desde su equipo",
+    "manualEntry": "o ingrese los vértices manualmente",
+    "number": "N°",
+    "easting": "Este (X)",
+    "northing": "Norte (Y)",
+    "actions": "Acciones",
+    "eastingOf": "Este del vértice {{number}}",
+    "northingOf": "Norte del vértice {{number}}",
+    "eastingPlaceholder": "Ej. 464210.35",
+    "northingPlaceholder": "Ej. 9239812.60",
+    "removeVertex": "Quitar vértice {{number}}",
+    "addVertex": "Agregar vértice",
+    "grid": "UTM WGS 84, zona {{zone}}, en metros",
+    "errors": {
+      "coordinateRequired": "Ingrese esta coordenada.",
+      "tooFewVertices": "El perímetro necesita al menos 3 vértices.",
+      "stationFileEmpty": "No se encontraron puntos en el archivo. Cada línea debe indicar punto, norte y este.",
+      "saveFailed": "No se pudo guardar el terreno. Revise su conexión e intente de nuevo.",
+      "crossingCheckFailed": "No se pudo verificar si se cruza con terrenos registrados. Revise su conexión e intente de nuevo.",
+      "beneficiaryNotFound": "Ningún beneficiario tiene este documento.",
+      "beneficiaryUnavailable": "No se pudo consultar el registro de beneficiarios.",
+      "documentRequired": "Ingrese el número de documento del beneficiario.",
+      "documentFormat": {
+        "DNI": "El DNI tiene 8 dígitos.",
+        "FOREIGNER_ID_CARD": "El carné de extranjería tiene de 9 a 12 letras o dígitos.",
+        "PASSPORT": "El pasaporte tiene de 6 a 12 letras o dígitos."
+      }
+    },
+    "beneficiaryDocument": "Documento del beneficiario",
+    "documentType": "Tipo de documento",
+    "documentNumberPlaceholder": "Ingrese el número",
+    "documentTypes": {
+      "DNI": "DNI",
+      "FOREIGNER_ID_CARD": "Carné de extranjería",
+      "PASSPORT": "Pasaporte"
+    },
+    "showOnMap": "Ver en el mapa",
+    "register": "Registrar terreno",
+    "discard": "Descartar terreno",
+    "crossingHint": "Este terreno parece cruzarse con un terreno registrado; se ve en rojo en el mapa. Al registrarlo se hará una verificación más estricta.",
+    "clearHint": "Este terreno no parece cruzarse con ningún terreno registrado. Al registrarlo se hará una verificación más estricta.",
+    "refusedHint": "Este terreno se superpone con terrenos registrados, remarcados en el mapa. Corrija sus vértices para poder registrarlo."
   }
 }

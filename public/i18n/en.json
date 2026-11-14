@@ -24,5 +24,83 @@
   },
   "splash": {
     "loading": "Loading"
+  },
+  "shell": {
+    "navigation": "Navigation",
+    "map": "Map",
+    "session": "Session",
+    "collapseNavigation": "Collapse menu",
+    "expandNavigation": "Expand menu"
+  },
+  "plotMap": {
+    "createPlot": "Create plot",
+    "goToDraft": "Go to the plot being created",
+    "refused": "Registration refused: the plot overlaps {{count}} registered plot(s), outlined on the map.",
+    "dismissRefusal": "Dismiss",
+    "draftClear": "Create plot: no crossings found",
+    "draftCrossing": "Create plot: crosses a registered plot"
+  },
+  "plotRegistered": {
+    "title": "Plot registered",
+    "message": "It now shows on the map, highlighted in green for a few seconds.",
+    "close": "Got it"
+  },
+  "createPlot": {
+    "title": "Create plot",
+    "close": "Close",
+    "plotData": "Plot details",
+    "beneficiaryName": "Beneficiary name",
+    "beneficiaryNamePlaceholder": "Filled in once the document is checked",
+    "area": "Estimated area (ha)",
+    "areaPlaceholder": "Calculated from the vertices",
+    "areaHint": "Calculated from the recorded perimeter",
+    "preview": "Perimeter preview",
+    "previewLabel": "Outline of the perimeter entered",
+    "previewEmpty": "Appears once at least 3 vertices are entered",
+    "perimeter": "Plot perimeter",
+    "perimeterHint": "Load the total station file or enter the vertices by hand. The perimeter closes by joining the last vertex to the first.",
+    "stationFile": "Drop the total station file here",
+    "stationFileHint": "or choose a .csv or .txt file from your computer",
+    "manualEntry": "or enter the vertices by hand",
+    "number": "No.",
+    "easting": "Easting (X)",
+    "northing": "Northing (Y)",
+    "actions": "Actions",
+    "eastingOf": "Easting of vertex {{number}}",
+    "northingOf": "Northing of vertex {{number}}",
+    "eastingPlaceholder": "e.g. 464210.35",
+    "northingPlaceholder": "e.g. 9239812.60",
+    "removeVertex": "Remove vertex {{number}}",
+    "addVertex": "Add vertex",
+    "grid": "UTM WGS 84, zone {{zone}}, in metres",
+    "errors": {
+      "coordinateRequired": "Enter this coordinate.",
+      "tooFewVertices": "A perimeter needs at least 3 vertices.",
+      "stationFileEmpty": "No points were found in the file. It must list point, northing and easting on each line.",
+      "saveFailed": "The plot could not be saved. Check your connection and try again.",
+      "crossingCheckFailed": "Could not check for crossings with registered plots. Check your connection and try again.",
+      "beneficiaryNotFound": "No beneficiary holds this document.",
+      "beneficiaryUnavailable": "The beneficiary registry could not be checked.",
+      "documentRequired": "Enter the beneficiary document number.",
+      "documentFormat": {
+        "DNI": "A DNI is 8 digits.",
+        "FOREIGNER_ID_CARD": "A foreigner ID card is 9 to 12 letters or digits.",
+        "PASSPORT": "A passport is 6 to 12 letters or digits."
+      }
+    },
+    "beneficiaryDocument": "Beneficiary document",
+    "documentType": "Document type",
+    "documentNumberPlaceholder": "Enter the number",
+    "documentTypes": {
+      "DNI": "DNI",
+      "FOREIGNER_ID_CARD": "Foreigner ID card",
+      "PASSPORT": "Passport"
+    },
+    "showOnMap": "Show on map",
+    "register": "Register plot",
+    "discard": "Discard plot",
+    "crossingHint": "This plot looks like it crosses a registered plot, shown in red on the map. A stricter check will run when you register it.",
+    "clearHint": "This plot does not seem to cross any registered plot. A stricter check will run when you register it.",
+    "refusedHint": "This plot overlaps registered plots, outlined on the map. Change its vertices to register it."
   }
 }

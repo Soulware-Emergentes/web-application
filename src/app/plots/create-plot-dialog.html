@@ -1,0 +1,275 @@
+<div class="flex flex-col gap-lg">
+  <header class="flex items-center gap-md">
+    <h2 [id]="titleId" class="flex-1 text-h3 text-text-primary">{{ 'createPlot.title' | transloco }}</h2>
+    <button
+      type="button"
+      class="grid size-8 place-items-center rounded-md hover:bg-bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+      [attr.aria-label]="'createPlot.close' | transloco"
+      (click)="dialogRef.close()"
+    >
+      <img ngSrc="/icons/close.svg" width="14" height="14" alt="" />
+    </button>
+  </header>
+
+  <form id="create-plot-form" class="flex flex-col gap-2xl md:flex-row" novalidate (submit)="save($event)">
+    <section class="flex flex-col gap-lg md:w-97 md:shrink-0" [attr.aria-label]="'createPlot.plotData' | transloco">
+      <div class="flex flex-col gap-xs">
+        <label for="beneficiary-document-number" class="text-label-md text-text-primary">
+          {{ 'createPlot.beneficiaryDocument' | transloco }}
+        </label>
+        @let documentNumber = plotForm.documentNumber();
+        <div class="flex gap-sm">
+          <select
+            class="shrink-0 rounded-md border border-border-strong bg-bg-surface px-md py-md text-body-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+            [attr.aria-label]="'createPlot.documentType' | transloco"
+            [formField]="plotForm.documentType"
+          >
+            @for (type of documentTypes; track type) {
+              <option [value]="type">{{ 'createPlot.documentTypes.' + type | transloco }}</option>
+            }
+          </select>
+          <div class="relative flex min-w-0 flex-1">
+            <input
+              id="beneficiary-document-number"
+              autocomplete="off"
+              aria-describedby="beneficiary-document-error"
+              [attr.inputmode]="plotForm.documentType().value() === 'DNI' ? 'numeric' : 'text'"
+              [attr.aria-busy]="beneficiary.isLoading()"
+              class="w-full rounded-md border bg-bg-surface py-md pr-12 pl-lg text-body-md placeholder:text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+              [class]="documentNumber.touched() && documentNumber.invalid() ? 'border-status-error' : 'border-border-strong'"
+              [placeholder]="'createPlot.documentNumberPlaceholder' | transloco"
+              [formField]="plotForm.documentNumber"
+            />
+            <span class="pointer-events-none absolute inset-y-0 right-lg flex items-center" aria-hidden="true">
+              @if (beneficiary.isLoading()) {
+                <span class="size-5 animate-spin rounded-full border-2 border-border-default border-t-brand-primary"></span>
+              } @else if (beneficiary.hasValue() && beneficiary.value() !== null) {
+                <img ngSrc="/icons/check.svg" width="20" height="20" alt="" />
+              }
+            </span>
+          </div>
+        </div>
+        <p id="beneficiary-document-error" class="text-caption text-status-error-text empty:hidden">
+          @if (documentNumber.touched() && documentNumber.errors()[0]; as error) {
+            {{ error.message ?? '' | transloco }}
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-xs">
+        <label for="beneficiary-name" class="text-label-md text-text-primary">
+          {{ 'createPlot.beneficiaryName' | transloco }}
+        </label>
+        <input
+          id="beneficiary-name"
+          readonly
+          aria-describedby="beneficiary-name-status"
+          class="rounded-md border border-border-strong bg-bg-surface px-lg py-md text-body-md placeholder:text-text-secondary"
+          [value]="beneficiary.hasValue() ? (beneficiary.value() ?? '') : ''"
+          [placeholder]="'createPlot.beneficiaryNamePlaceholder' | transloco"
+        />
+        <p id="beneficiary-name-status" class="text-caption text-status-error-text empty:hidden" aria-live="polite">
+          @if (beneficiary.error()) {
+            {{ 'createPlot.errors.beneficiaryUnavailable' | transloco }}
+          } @else if (beneficiary.hasValue() && beneficiary.value() === null) {
+            {{ 'createPlot.errors.beneficiaryNotFound' | transloco }}
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-xs">
+        <label for="plot-area" class="text-label-md text-text-disabled">{{ 'createPlot.area' | transloco }}</label>
+        <input
+          id="plot-area"
+          disabled
+          aria-describedby="plot-area-hint"
+          class="rounded-md border border-border-default bg-bg-disabled px-lg py-md text-body-md text-text-secondary placeholder:text-text-secondary"
+          [value]="area() === null ? '' : (area() | number: '1.2-2')"
+          [placeholder]="'createPlot.areaPlaceholder' | transloco"
+        />
+        <p id="plot-area-hint" class="text-caption text-text-disabled">{{ 'createPlot.areaHint' | transloco }}</p>
+      </div>
+
+      <figure class="flex flex-col gap-1.5">
+        <figcaption class="text-label-md text-text-primary">{{ 'createPlot.preview' | transloco }}</figcaption>
+        <div
+          class="flex h-50 items-center justify-center rounded-md border border-dashed border-border-strong bg-bg-muted px-xl py-lg"
+        >
+          @if (preview(); as points) {
+            <svg
+              class="h-full w-full"
+              role="img"
+              [attr.viewBox]="'0 0 ' + previewWidth + ' ' + previewHeight"
+              [attr.aria-label]="'createPlot.previewLabel' | transloco"
+            >
+              <polygon
+                [attr.points]="points"
+                class="fill-brand-primary-subtle stroke-brand-primary"
+                stroke-width="2"
+                stroke-linejoin="round"
+                vector-effect="non-scaling-stroke"
+              />
+            </svg>
+          } @else {
+            <p class="text-center text-caption text-text-secondary">{{ 'createPlot.previewEmpty' | transloco }}</p>
+          }
+        </div>
+      </figure>
+    </section>
+
+    <section class="relative min-w-0 flex-1" aria-labelledby="plot-perimeter-title">
+      <!-- The plot details on the left set how tall the form is; the vertices scroll within that. -->
+      <div class="flex flex-col gap-md md:absolute md:inset-0">
+        <header class="flex flex-col gap-xs">
+          <h3 id="plot-perimeter-title" class="text-label-md text-text-primary">{{ 'createPlot.perimeter' | transloco }}</h3>
+          <p class="text-caption text-text-secondary">{{ 'createPlot.perimeterHint' | transloco }}</p>
+        </header>
+    
+        <label
+          class="flex cursor-pointer items-center gap-md rounded-md border border-dashed border-border-strong bg-bg-surface px-lg py-3.5 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-border-focus"
+          (dragover)="$event.preventDefault()"
+          (drop)="dropStationFile($event)"
+        >
+          <span class="rounded-full bg-brand-primary-subtle p-sm">
+            <img ngSrc="/icons/upload.svg" width="20" height="20" alt="" />
+          </span>
+          <span class="flex flex-1 flex-col gap-2xs text-caption">
+            <span class="text-text-primary">{{ 'createPlot.stationFile' | transloco }}</span>
+            <span class="text-text-secondary">{{ 'createPlot.stationFileHint' | transloco }}</span>
+          </span>
+          <input type="file" accept=".csv,.txt" class="sr-only" (change)="chooseStationFile($event)" />
+        </label>
+        @if (stationFileEmpty()) {
+          <p role="alert" class="text-caption text-status-error-text">{{ 'createPlot.errors.stationFileEmpty' | transloco }}</p>
+        }
+    
+        <div class="flex items-center gap-md text-caption text-text-secondary">
+          <span class="h-px flex-1 bg-border-default"></span>
+          {{ 'createPlot.manualEntry' | transloco }}
+          <span class="h-px flex-1 bg-border-default"></span>
+        </div>
+    
+        <div class="flex min-h-0 flex-col overflow-hidden rounded-md border border-border-default bg-bg-surface" role="table">
+          <div class="flex items-center gap-md bg-bg-muted px-md py-2.5 text-caption text-text-secondary" role="row">
+            <span class="w-6" role="columnheader">{{ 'createPlot.number' | transloco }}</span>
+            <span class="flex-1" role="columnheader">{{ 'createPlot.easting' | transloco }}</span>
+            <span class="flex-1" role="columnheader">{{ 'createPlot.northing' | transloco }}</span>
+            <span class="w-5" role="columnheader"><span class="sr-only">{{ 'createPlot.actions' | transloco }}</span></span>
+          </div>
+          <div class="max-h-80 min-h-0 overflow-y-auto md:max-h-none" role="rowgroup">
+            @for (vertex of plotForm.vertices; track vertex; let index = $index) {
+              <div class="flex items-center gap-md border-t border-border-default px-md py-sm" role="row">
+                <span class="w-6 text-caption text-text-secondary" role="cell">{{ index + 1 }}</span>
+                <span class="flex min-w-0 flex-1" role="cell">
+                  <input
+                    type="number"
+                    step="any"
+                    class="w-full min-w-0 rounded-sm border bg-bg-surface px-2.5 py-sm text-caption placeholder:text-text-placeholder focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+                    [class]="vertex.easting().touched() && vertex.easting().invalid() ? 'border-status-error' : 'border-border-default'"
+                    [attr.aria-label]="'createPlot.eastingOf' | transloco: { number: index + 1 }"
+                    [placeholder]="'createPlot.eastingPlaceholder' | transloco"
+                    [formField]="vertex.easting"
+                  />
+                </span>
+                <span class="flex min-w-0 flex-1" role="cell">
+                  <input
+                    type="number"
+                    step="any"
+                    class="w-full min-w-0 rounded-sm border bg-bg-surface px-2.5 py-sm text-caption placeholder:text-text-placeholder focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+                    [class]="vertex.northing().touched() && vertex.northing().invalid() ? 'border-status-error' : 'border-border-default'"
+                    [attr.aria-label]="'createPlot.northingOf' | transloco: { number: index + 1 }"
+                    [placeholder]="'createPlot.northingPlaceholder' | transloco"
+                    [formField]="vertex.northing"
+                  />
+                </span>
+                <span class="flex w-5 justify-center" role="cell">
+                  <button
+                    type="button"
+                    class="grid place-items-center rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+                    [attr.aria-label]="'createPlot.removeVertex' | transloco: { number: index + 1 }"
+                    (click)="removeVertex(index)"
+                  >
+                    <img ngSrc="/icons/remove-vertex.svg" width="18" height="18" alt="" />
+                  </button>
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+    
+        <div class="flex flex-wrap items-center gap-md">
+          <button
+            type="button"
+            class="flex items-center gap-1.5 rounded-sm py-xs text-caption text-text-link hover:text-text-link-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+            (click)="addVertex()"
+          >
+            <img ngSrc="/icons/plus.svg" width="16" height="16" alt="" />
+            {{ 'createPlot.addVertex' | transloco }}
+          </button>
+          <span class="flex-1"></span>
+          <span class="text-caption text-text-secondary">{{ 'createPlot.grid' | transloco: { zone } }}</span>
+        </div>
+        @let vertices = plotForm.vertices();
+        @if (vertices.touched() && vertices.errors()[0]; as error) {
+          <p class="text-caption text-status-error-text">{{ error.message ?? '' | transloco }}</p>
+        }
+      </div>
+    </section>
+  </form>
+</div>
+
+<footer class="flex items-center justify-end gap-lg">
+  @if (saveFailure(); as failure) {
+    <p role="alert" class="min-w-0 flex-1 rounded-md bg-status-error-subtle px-lg py-md text-body-sm text-status-error-text">
+      {{ failure.reason ?? ('createPlot.errors.saveFailed' | transloco) }}
+    </p>
+  } @else if (crossingCheckFailed()) {
+    <p role="alert" class="min-w-0 flex-1 rounded-md bg-status-error-subtle px-lg py-md text-body-sm text-status-error-text">
+      {{ 'createPlot.errors.crossingCheckFailed' | transloco }}
+    </p>
+  } @else if (refused()) {
+    <p role="status" class="min-w-0 flex-1 rounded-md bg-status-error-subtle px-lg py-md text-body-sm text-status-error-text">
+      {{ 'createPlot.refusedHint' | transloco }}
+    </p>
+  } @else if (crossing() === true) {
+    <p role="status" class="min-w-0 flex-1 rounded-md bg-status-warning-subtle px-lg py-md text-body-sm text-status-warning-text">
+      {{ 'createPlot.crossingHint' | transloco }}
+    </p>
+  } @else if (crossing() === false) {
+    <p role="status" class="min-w-0 flex-1 rounded-md bg-status-success-subtle px-lg py-md text-body-sm text-status-success-text">
+      {{ 'createPlot.clearHint' | transloco }}
+    </p>
+  }
+  @if (hasDraft) {
+    <button
+      type="button"
+      class="flex h-12 shrink-0 items-center gap-sm rounded-md border border-border-strong bg-bg-surface px-xl text-label-lg text-text-primary hover:bg-bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+      (click)="discard()"
+    >
+      {{ 'createPlot.discard' | transloco }}
+      <img ngSrc="/icons/discard.svg" width="20" height="20" alt="" />
+    </button>
+  }
+  @if (reviewed()) {
+    <button
+      type="submit"
+      form="create-plot-form"
+      [disabled]="plotForm().submitting()"
+      class="flex h-12 shrink-0 items-center gap-sm rounded-md bg-brand-primary px-xl text-label-lg text-text-on-primary hover:bg-brand-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus active:bg-brand-primary-pressed disabled:cursor-wait disabled:opacity-60"
+    >
+      {{ 'createPlot.register' | transloco }}
+      <img ngSrc="/icons/register.svg" width="20" height="20" alt="" />
+    </button>
+  } @else {
+    <button
+      type="button"
+      class="h-12 flex shrink-0 items-center gap-sm rounded-md bg-brand-primary px-xl text-label-lg text-text-on-primary hover:bg-brand-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus active:bg-brand-primary-pressed disabled:cursor-not-allowed disabled:opacity-60"
+      [disabled]="!closes() || checkingCrossings()"
+      [class.cursor-wait]="checkingCrossings()"
+      (click)="showOnMap()"
+    >
+      {{ 'createPlot.showOnMap' | transloco }}
+      <img ngSrc="/icons/map.svg" width="20" height="20" alt="" />
+    </button>
+  }
+</footer>
