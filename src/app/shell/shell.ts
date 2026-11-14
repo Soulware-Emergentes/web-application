@@ -26,11 +26,12 @@ import { Sidebar } from './sidebar';
       <div class="flex flex-col gap-sm">
         @for (view of views; track view.path) {
           <a
-            class="rounded-md px-md py-md text-label-md text-text-on-inverse hover:bg-navy-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+            class="flex items-center gap-md rounded-md px-md py-md text-label-md text-text-on-inverse hover:bg-navy-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
             [routerLink]="view.path"
             routerLinkActive="bg-brand-primary hover:bg-brand-primary-hover"
             ariaCurrentWhenActive="page"
           >
+            <img [ngSrc]="view.icon" width="20" height="20" alt="" />
             {{ view.label | transloco }}
           </a>
         }
@@ -46,7 +47,7 @@ export class Shell {
   protected readonly sidebar = inject(Sidebar);
 
   protected readonly views = [
-    { path: '/map', label: 'shell.map' },
-    { path: '/session', label: 'shell.session' },
+    { path: '/map', label: 'shell.map', icon: '/icons/map.svg' },
+    { path: '/session', label: 'shell.session', icon: '/icons/session.svg' },
   ];
 }
