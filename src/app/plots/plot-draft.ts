@@ -1,7 +1,7 @@
 import type { Polygon } from 'geojson';
 import { LegalDocumentType } from '../beneficiaries/legal-document';
 import { Vertex, completeVertices, emptyVertex } from './perimeter';
-import { UtmZone } from './plots-api';
+import { RegisteredPlot, UtmZone } from './plots-api';
 import { southernUtmToLngLat } from './utm';
 
 /** A plot being entered, not sent to sgt yet. */
@@ -11,11 +11,26 @@ export interface NewPlot {
   vertices: Vertex[];
 }
 
-/** A plot looked at on the map, and whether it looked like it crossed a registered one. */
+/**
+ * A plot looked at on the map, whether it looked like it crossed a registered one, and whether sgt
+ * refused it for crossing one, which settles that it does.
+ */
 export interface DraftedPlot {
   readonly plot: NewPlot;
   readonly crossing: boolean;
+  readonly refused: boolean;
 }
+
+/**
+ * How the form to create a plot closed: with a plot to look at on the map, with one sgt refused for
+ * crossing registered plots, with one it registered, or with the drafted plot thrown away. It closes
+ * with nothing when dismissed, which leaves the drafted plot as it was.
+ */
+export type CreatePlotOutcome =
+  | { readonly kind: 'DRAFTED'; readonly drafted: DraftedPlot }
+  | { readonly kind: 'DISCARDED' }
+  | { readonly kind: 'REFUSED'; readonly drafted: DraftedPlot; readonly crossedPlots: readonly string[] }
+  | { readonly kind: 'REGISTERED'; readonly registered: RegisteredPlot };
 
 /** The fewest corners a perimeter can close with. */
 export const MIN_VERTICES = 3;
@@ -29,6 +44,10 @@ export function emptyPlot(): NewPlot {
     documentNumber: '',
     vertices: Array.from({ length: MIN_VERTICES }, emptyVertex),
   };
+}
+
+export function samePerimeter(first: Polygon | null, second: Polygon | null): boolean {
+  return JSON.stringify(first?.coordinates ?? null) === JSON.stringify(second?.coordinates ?? null);
 }
 
 export function sameVertices(first: readonly Vertex[], second: readonly Vertex[]): boolean {

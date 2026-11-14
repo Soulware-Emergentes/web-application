@@ -34,8 +34,15 @@
   "plotMap": {
     "createPlot": "Create plot",
     "goToDraft": "Go to the plot being created",
+    "refused": "Registration refused: the plot overlaps {{count}} registered plot(s), outlined on the map.",
+    "dismissRefusal": "Dismiss",
     "draftClear": "Create plot: no crossings found",
     "draftCrossing": "Create plot: crosses a registered plot"
+  },
+  "plotRegistered": {
+    "title": "Plot registered",
+    "message": "It now shows on the map, highlighted in green for a few seconds.",
+    "close": "Got it"
   },
   "createPlot": {
     "title": "Create plot",
@@ -90,7 +97,9 @@
     },
     "showOnMap": "Show on map",
     "register": "Register plot",
+    "discard": "Discard plot",
     "crossingHint": "This plot looks like it crosses a registered plot, shown in red on the map. A stricter check will run when you register it.",
-    "clearHint": "This plot does not seem to cross any registered plot. A stricter check will run when you register it."
+    "clearHint": "This plot does not seem to cross any registered plot. A stricter check will run when you register it.",
+    "refusedHint": "This plot overlaps registered plots, outlined on the map. Change its vertices to register it."
   }
 }

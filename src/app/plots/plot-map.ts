@@ -11,14 +11,14 @@ import {
 } from 'maplibre-gl';
 import { EMPTY, Subject, catchError, debounceTime, mergeMap, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { showCellGrid } from './debug-cell-grid'; // TEMPORARY: cell grid
 import { LoadedCells } from './loaded-cells';
 import { Cell, cellsAround } from './plot-cells';
-import { DraftedPlot, perimeterOf } from './plot-draft';
-import { addPlotLayers, showPlots } from './plot-layers';
+import { CreatePlotOutcome, DraftedPlot, perimeterOf, samePerimeter } from './plot-draft';
+import { MarkedPlots, addPlotLayers, markPlots, showPlots } from './plot-layers';
 import { addPlotPreviewLayer, flyToPlotPreview, glideToPlotPreview, showPlotPreview } from './plot-preview-layer';
 import { PlotsApi } from './plots-api';
 import { CreatePlotDialog } from './create-plot-dialog';
+import { PlotRegisteredDialog } from './plot-registered-dialog';
 
 /**
  * MapLibre parses GeoJSON in a web worker loaded from its own file, which the build copies next to
@@ -31,6 +31,9 @@ const COUNTRY_ZOOM = 5;
 /** How long the view has to rest before its plots are asked for, so a pan asks once, not per frame. */
 const SETTLE_MS = 250;
 const PARALLEL_REQUESTS = 6;
+/** How long a plot just registered stays set apart from the rest. */
+const REGISTERED_MARK_MS = 6000;
+const NO_MARKED_PLOTS: MarkedPlots = { crossed: [], registered: [] };
 
 type DraftCheck = 'NONE' | 'CLEAR' | 'CROSSING';
 const DRAFT_LABELS: Record<DraftCheck, string> = {
@@ -53,6 +56,22 @@ const DRAFT_LABELS: Record<DraftCheck, string> = {
 
       <!-- Anything laid over the map goes here; only what it holds takes clicks, the rest reach the map. -->
       <div class="pointer-events-none absolute inset-0">
+        @if (refusedFor(); as crossedPlots) {
+          <div
+            role="alert"
+            class="pointer-events-auto absolute top-[10px] left-1/2 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-md rounded-md bg-status-error-subtle py-sm pr-sm pl-lg text-body-sm text-status-error-text shadow-md md:max-w-120"
+          >
+            <p class="min-w-0 flex-1">{{ 'plotMap.refused' | transloco: { count: crossedPlots } }}</p>
+            <button
+              type="button"
+              class="grid size-8 shrink-0 place-items-center rounded-md hover:bg-bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+              [attr.aria-label]="'plotMap.dismissRefusal' | transloco"
+              (click)="refusedFor.set(null)"
+            >
+              <img ngSrc="/icons/close.svg" width="14" height="14" alt="" />
+            </button>
+          </div>
+        }
         <!-- Level with MapLibre's controls, which sit 10px in from the top and right and are 29px wide. -->
         <div class="absolute top-[10px] right-[49px] flex items-center gap-sm">
           @if (draftCheck() !== 'NONE') {
@@ -130,16 +149,27 @@ export class PlotMap {
   private readonly destroyRef = inject(DestroyRef);
   /** The map, once it has loaded and its layers can be drawn in. */
   private readonly loadedMap = signal<MapLibreMap | null>(null);
+  private readonly cells = new LoadedCells();
+  /** Each time the view comes to rest, or its plots have to be asked for again. */
+  private readonly settledViews = new Subject<void>();
+  private readonly markedPlots = signal<MarkedPlots>(NO_MARKED_PLOTS);
+  /** How many registered plots sgt last refused the drafted plot for crossing; null once dismissed. */
+  protected readonly refusedFor = signal<number | null>(null);
+  private unmarkRegistered: ReturnType<typeof setTimeout> | undefined;
 
   /**
    * The plot last looked at from the form, shown on the map until the form closes again with
    * another or with nothing. Only here, in memory: reloading the page drops it.
    */
   private readonly draftedPlot = signal<DraftedPlot | null>(null);
-  private readonly preview = computed(() => {
-    const drafted = this.draftedPlot();
-    return drafted ? perimeterOf(drafted.plot) : null;
-  });
+  /** The drafted plot's perimeter, the same value for as long as its vertices stay the same. */
+  private readonly preview = computed(
+    () => {
+      const drafted = this.draftedPlot();
+      return drafted ? perimeterOf(drafted.plot) : null;
+    },
+    { equal: samePerimeter },
+  );
 
   protected readonly draftCheck = computed<DraftCheck>(() => {
     const drafted = this.draftedPlot();
@@ -163,6 +193,13 @@ export class PlotMap {
         flyToPlotPreview(map, this.preview());
       }
     });
+    effect(() => {
+      const map = this.loadedMap();
+      if (map) {
+        markPlots(map, this.markedPlots());
+      }
+    });
+    this.destroyRef.onDestroy(() => clearTimeout(this.unmarkRegistered));
 
     afterNextRender(() => {
       const map = new MapLibreMap({
@@ -178,13 +215,14 @@ export class PlotMap {
         addPlotLayers(map, {
           plot: token('--color-brand-primary'),
           label: token('--color-text-on-primary'),
+          crossed: token('--color-status-error-pressed'),
+          registered: token('--color-status-success'),
         });
         addPlotPreviewLayer(map, {
           plot: token('--color-status-success'),
           crossing: token('--color-status-error'),
         });
         this.showPlotsInView(map);
-        showCellGrid(map); // TEMPORARY: cell grid
         this.loadedMap.set(map);
       });
     });
@@ -200,36 +238,79 @@ export class PlotMap {
 
   protected openCreatePlotDialog(): void {
     this.dialog
-      .open<DraftedPlot, DraftedPlot | null>(CreatePlotDialog, {
+      .open<CreatePlotOutcome, DraftedPlot | null>(CreatePlotDialog, {
         data: this.draftedPlot(),
         ariaLabelledBy: CreatePlotDialog.titleId,
         backdropClass: 'bg-overlay-scrim',
       })
-      .closed.subscribe((drafted) => this.draftedPlot.set(drafted ?? null));
+      .closed.subscribe((outcome) => this.settle(outcome));
+  }
+
+  /**
+   * Takes in how the form closed: what to show of the drafted plot, and which plots to set apart.
+   * Dismissing the form leaves everything as it was.
+   */
+  private settle(outcome: CreatePlotOutcome | undefined): void {
+    if (!outcome) {
+      return;
+    }
+    clearTimeout(this.unmarkRegistered);
+    this.refusedFor.set(outcome.kind === 'REFUSED' ? outcome.crossedPlots.length : null);
+    switch (outcome.kind) {
+      case 'DRAFTED':
+        this.draftedPlot.set(outcome.drafted);
+        this.markedPlots.set(NO_MARKED_PLOTS);
+        break;
+      case 'REFUSED':
+        this.draftedPlot.set(outcome.drafted);
+        this.markedPlots.set({ crossed: outcome.crossedPlots, registered: [] });
+        break;
+      case 'REGISTERED':
+        this.draftedPlot.set(null);
+        this.markedPlots.set(NO_MARKED_PLOTS);
+        this.cells.forget();
+        this.settledViews.next();
+        this.dialog
+          .open(PlotRegisteredDialog, {
+            ariaLabelledBy: PlotRegisteredDialog.titleId,
+            backdropClass: 'bg-overlay-scrim',
+          })
+          .closed.subscribe(() => this.markRegistered(outcome.registered.id));
+        break;
+      case 'DISCARDED':
+        this.draftedPlot.set(null);
+        this.markedPlots.set(NO_MARKED_PLOTS);
+        break;
+    }
+  }
+
+  /** Sets the plot just registered apart for a while, once nothing covers the map. */
+  private markRegistered(id: string): void {
+    clearTimeout(this.unmarkRegistered);
+    this.markedPlots.set({ crossed: [], registered: [id] });
+    this.unmarkRegistered = setTimeout(() => this.markedPlots.set(NO_MARKED_PLOTS), REGISTERED_MARK_MS);
   }
 
   private showPlotsInView(map: MapLibreMap): void {
-    const cells = new LoadedCells();
-    const settledViews = new Subject<void>();
     const cellsInView = () => cellsAround(map.getBounds(), map.getZoom());
-    const drawLoadedPlots = () => showPlots(map, cells.plotsIn(cellsInView()));
+    const drawLoadedPlots = () => showPlots(map, this.cells.plotsIn(cellsInView()));
 
-    settledViews
+    this.settledViews
       .pipe(
         debounceTime(SETTLE_MS),
         tap(drawLoadedPlots),
-        mergeMap(() => cells.claimMissing(cellsInView())),
-        mergeMap((cell) => this.load(cell, cells), PARALLEL_REQUESTS),
+        mergeMap(() => this.cells.claimMissing(cellsInView())),
+        mergeMap((cell) => this.load(cell, this.cells), PARALLEL_REQUESTS),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(drawLoadedPlots);
 
-    map.on('moveend', () => settledViews.next());
-    settledViews.next();
+    map.on('moveend', () => this.settledViews.next());
+    this.settledViews.next();
   }
 
   private load(cell: Cell, cells: LoadedCells) {
-    return this.plotsApi.inCell(cell).pipe(
+    return this.plotsApi.inCell(cell, cells.wasForgotten(cell)).pipe(
       tap((plots) => cells.store(cell, plots)),
       catchError(() => {
         cells.release(cell);

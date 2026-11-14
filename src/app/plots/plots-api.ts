@@ -36,13 +36,20 @@ export interface RegisteredPlot {
 export class PlotsApi {
   private readonly http = inject(HttpClient);
 
-  inCell(cell: Cell): Observable<PlotsInView> {
-    return this.within(boundingBoxOf(cell));
+  /**
+   * @param fresh whether to skip the browser's cache, which keeps a cell's answer for a while, as
+   *              when a plot has just been registered in it
+   */
+  inCell(cell: Cell, fresh = false): Observable<PlotsInView> {
+    return this.within(boundingBoxOf(cell), fresh);
   }
 
   /** @param bbox west,south,east,north in degrees */
-  within(bbox: string): Observable<PlotsInView> {
-    return this.http.get<PlotsInView>(`${environment.sgt.api}/plots/within`, { params: { bbox } });
+  within(bbox: string, fresh = false): Observable<PlotsInView> {
+    return this.http.get<PlotsInView>(`${environment.sgt.api}/plots/within`, {
+      params: { bbox },
+      cache: fresh ? 'reload' : 'default',
+    });
   }
 
   register(plot: PlotRegistration): Observable<RegisteredPlot> {

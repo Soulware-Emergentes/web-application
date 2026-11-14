@@ -34,8 +34,15 @@
   "plotMap": {
     "createPlot": "Crear terreno",
     "goToDraft": "Ir al terreno en creación",
+    "refused": "Registro rechazado: el terreno se superpone con {{count}} terreno(s) registrado(s), remarcados en el mapa.",
+    "dismissRefusal": "Cerrar aviso",
     "draftClear": "Crear terreno: sin cruces",
     "draftCrossing": "Crear terreno: se cruza con un terreno registrado"
+  },
+  "plotRegistered": {
+    "title": "Terreno registrado",
+    "message": "Ya aparece en el mapa, resaltado en verde por unos segundos.",
+    "close": "Entendido"
   },
   "createPlot": {
     "title": "Crear terreno",
@@ -90,7 +97,9 @@
     },
     "showOnMap": "Ver en el mapa",
     "register": "Registrar terreno",
+    "discard": "Descartar terreno",
     "crossingHint": "Este terreno parece cruzarse con un terreno registrado; se ve en rojo en el mapa. Al registrarlo se hará una verificación más estricta.",
-    "clearHint": "Este terreno no parece cruzarse con ningún terreno registrado. Al registrarlo se hará una verificación más estricta."
+    "clearHint": "Este terreno no parece cruzarse con ningún terreno registrado. Al registrarlo se hará una verificación más estricta.",
+    "refusedHint": "Este terreno se superpone con terrenos registrados, remarcados en el mapa. Corrija sus vértices para poder registrarlo."
   }
 }

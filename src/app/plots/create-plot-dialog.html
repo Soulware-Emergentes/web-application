@@ -216,22 +216,22 @@
       </div>
     </section>
   </form>
-
-  @if (saveFailure(); as failure) {
-    <p role="alert" class="rounded-md bg-status-error-subtle px-lg py-md text-body-sm text-status-error-text">
-      {{ failure.reason ?? ('createPlot.errors.saveFailed' | transloco) }}
-    </p>
-  }
-
-  @if (crossingCheckFailed()) {
-    <p role="alert" class="rounded-md bg-status-error-subtle px-lg py-md text-body-sm text-status-error-text">
-      {{ 'createPlot.errors.crossingCheckFailed' | transloco }}
-    </p>
-  }
 </div>
 
 <footer class="flex items-center justify-end gap-lg">
-  @if (crossing() === true) {
+  @if (saveFailure(); as failure) {
+    <p role="alert" class="min-w-0 flex-1 rounded-md bg-status-error-subtle px-lg py-md text-body-sm text-status-error-text">
+      {{ failure.reason ?? ('createPlot.errors.saveFailed' | transloco) }}
+    </p>
+  } @else if (crossingCheckFailed()) {
+    <p role="alert" class="min-w-0 flex-1 rounded-md bg-status-error-subtle px-lg py-md text-body-sm text-status-error-text">
+      {{ 'createPlot.errors.crossingCheckFailed' | transloco }}
+    </p>
+  } @else if (refused()) {
+    <p role="status" class="min-w-0 flex-1 rounded-md bg-status-error-subtle px-lg py-md text-body-sm text-status-error-text">
+      {{ 'createPlot.refusedHint' | transloco }}
+    </p>
+  } @else if (crossing() === true) {
     <p role="status" class="min-w-0 flex-1 rounded-md bg-status-warning-subtle px-lg py-md text-body-sm text-status-warning-text">
       {{ 'createPlot.crossingHint' | transloco }}
     </p>
@@ -240,14 +240,25 @@
       {{ 'createPlot.clearHint' | transloco }}
     </p>
   }
+  @if (hasDraft) {
+    <button
+      type="button"
+      class="flex h-12 shrink-0 items-center gap-sm rounded-md border border-border-strong bg-bg-surface px-xl text-label-lg text-text-primary hover:bg-bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+      (click)="discard()"
+    >
+      {{ 'createPlot.discard' | transloco }}
+      <img ngSrc="/icons/discard.svg" width="20" height="20" alt="" />
+    </button>
+  }
   @if (reviewed()) {
     <button
       type="submit"
       form="create-plot-form"
       [disabled]="plotForm().submitting()"
-      class="h-12 shrink-0 rounded-md bg-brand-primary px-xl text-label-lg text-text-on-primary hover:bg-brand-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus active:bg-brand-primary-pressed disabled:cursor-wait disabled:opacity-60"
+      class="flex h-12 shrink-0 items-center gap-sm rounded-md bg-brand-primary px-xl text-label-lg text-text-on-primary hover:bg-brand-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus active:bg-brand-primary-pressed disabled:cursor-wait disabled:opacity-60"
     >
       {{ 'createPlot.register' | transloco }}
+      <img ngSrc="/icons/register.svg" width="20" height="20" alt="" />
     </button>
   } @else {
     <button

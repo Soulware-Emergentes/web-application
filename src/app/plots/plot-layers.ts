@@ -1,5 +1,5 @@
 import type { FeatureCollection, Point, Polygon } from 'geojson';
-import { GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl';
+import { ExpressionSpecification, GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl';
 import { centresOf } from './plot-centres';
 
 /**
@@ -10,6 +10,12 @@ import { centresOf } from './plot-centres';
 const OUTLINES_FROM_ZOOM = 12;
 const CLUSTER_RADIUS_PIXELS = 50;
 const LABEL_FONT = ['Open Sans Semibold'];
+/** A marked plot's outline, at rest and at the top of a pulse. */
+const MARKED_LINE_WIDTH = 3.5;
+const PULSE_LINE_WIDTH = 7;
+/** How a newly crossed plot draws the eye: a few pulses of its outline. */
+const PULSES = 3;
+const PULSE_MS = 550;
 
 const SOURCES = { outlines: 'plot-outlines', centres: 'plot-centres' } as const;
 const LAYERS = {
@@ -18,11 +24,25 @@ const LAYERS = {
   clusters: 'plot-clusters',
   clusterCounts: 'plot-cluster-counts',
   points: 'plot-points',
+  crossedFill: 'plot-crossed-fill',
+  crossedOutline: 'plot-crossed-outline',
+  registeredFill: 'plot-registered-fill',
+  registeredOutline: 'plot-registered-outline',
 } as const;
 
 export interface PlotColours {
   plot: string;
   label: string;
+  /** A registered plot a new one was refused for crossing. */
+  crossed: string;
+  /** A plot just registered. */
+  registered: string;
+}
+
+/** The plots to set apart from the rest, by id. */
+export interface MarkedPlots {
+  crossed: readonly string[];
+  registered: readonly string[];
 }
 
 const NO_PLOTS: FeatureCollection<Polygon> = { type: 'FeatureCollection', features: [] };
@@ -30,13 +50,90 @@ const NO_PLOTS: FeatureCollection<Polygon> = { type: 'FeatureCollection', featur
 /** Adds the layers plots show in, empty until {@link showPlots} fills them. */
 export function addPlotLayers(map: MapLibreMap, colours: PlotColours): void {
   addOutlines(map, colours);
+  addMarkedOutlines(map, colours);
   addClusteredCentres(map, colours);
   zoomIntoClustersOnClick(map);
 }
 
 export function showPlots(map: MapLibreMap, plots: FeatureCollection<Polygon>): void {
-  map.getSource<GeoJSONSource>(SOURCES.outlines)?.setData(plots);
+  // Each plot's id as a property too, since MapLibre only matches ids that are numbers.
+  const withIds: FeatureCollection<Polygon> = {
+    ...plots,
+    features: plots.features.map((plot) => ({ ...plot, properties: { ...plot.properties, id: plot.id } })),
+  };
+  map.getSource<GeoJSONSource>(SOURCES.outlines)?.setData(withIds);
   map.getSource<GeoJSONSource>(SOURCES.centres)?.setData(centresOf(plots));
+}
+
+/**
+ * Sets apart the plots given, over the rest and over the drafted plot's preview, until marked
+ * again; the outlines of the plots it marks pulse a few times so they catch the eye.
+ */
+export function markPlots(map: MapLibreMap, { crossed, registered }: MarkedPlots): void {
+  [LAYERS.crossedFill, LAYERS.crossedOutline, LAYERS.registeredFill, LAYERS.registeredOutline].forEach((layer) =>
+    map.moveLayer(layer),
+  );
+  map.setFilter(LAYERS.crossedFill, withIdIn(crossed));
+  map.setFilter(LAYERS.crossedOutline, withIdIn(crossed));
+  map.setFilter(LAYERS.registeredFill, withIdIn(registered));
+  map.setFilter(LAYERS.registeredOutline, withIdIn(registered));
+  if (crossed.length > 0) {
+    pulse(map, LAYERS.crossedOutline);
+  }
+  if (registered.length > 0) {
+    pulse(map, LAYERS.registeredOutline);
+  }
+}
+
+/** The pulse under way on each layer, so a new one takes its place rather than running beside it. */
+const pulses = new Map<string, number>();
+
+function pulse(map: MapLibreMap, layer: string): void {
+  cancelAnimationFrame(pulses.get(layer) ?? 0);
+  const start = performance.now();
+  const step = (now: number) => {
+    const progress = (now - start) / (PULSES * PULSE_MS);
+    if (progress >= 1 || !map.getLayer(layer)) {
+      if (map.getLayer(layer)) {
+        map.setPaintProperty(layer, 'line-width', MARKED_LINE_WIDTH);
+      }
+      pulses.delete(layer);
+      return;
+    }
+    const swell = (1 - Math.cos(2 * Math.PI * PULSES * progress)) / 2;
+    map.setPaintProperty(layer, 'line-width', MARKED_LINE_WIDTH + (PULSE_LINE_WIDTH - MARKED_LINE_WIDTH) * swell);
+    pulses.set(layer, requestAnimationFrame(step));
+  };
+  pulses.set(layer, requestAnimationFrame(step));
+}
+
+function withIdIn(ids: readonly string[]): ExpressionSpecification {
+  return ['in', ['get', 'id'], ['literal', [...ids]]];
+}
+
+function addMarkedOutlines(map: MapLibreMap, colours: PlotColours): void {
+  const marked = [
+    { fill: LAYERS.crossedFill, outline: LAYERS.crossedOutline, colour: colours.crossed },
+    { fill: LAYERS.registeredFill, outline: LAYERS.registeredOutline, colour: colours.registered },
+  ];
+  for (const { fill, outline, colour } of marked) {
+    map.addLayer({
+      id: fill,
+      type: 'fill',
+      source: SOURCES.outlines,
+      minzoom: OUTLINES_FROM_ZOOM,
+      filter: withIdIn([]),
+      paint: { 'fill-color': colour, 'fill-opacity': 0.45 },
+    });
+    map.addLayer({
+      id: outline,
+      type: 'line',
+      source: SOURCES.outlines,
+      minzoom: OUTLINES_FROM_ZOOM,
+      filter: withIdIn([]),
+      paint: { 'line-color': colour, 'line-width': MARKED_LINE_WIDTH },
+    });
+  }
 }
 
 function addOutlines(map: MapLibreMap, colours: PlotColours): void {

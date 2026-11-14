@@ -21,6 +21,7 @@ import {
 } from './perimeter';
 import { overlaps } from './overlap';
 import {
+  CreatePlotOutcome,
   DraftedPlot,
   MIN_VERTICES,
   NewPlot,
@@ -32,6 +33,9 @@ import {
 } from './plot-draft';
 import { PlotRegistration, PlotsApi } from './plots-api';
 
+/** What sgt answers a plot it refuses for crossing registered ones with. */
+const OVERLAPPING_PLOT = 'error.plots.overlapping-plot';
+
 /** The shortest a beneficiary check shows as under way, so it reads as a check even when the registry answers at once. */
 const CHECK_MIN_MS = 900;
 const PREVIEW_WIDTH = 340;
@@ -41,7 +45,7 @@ const PREVIEW_HEIGHT = 168;
  * The form a plot is registered with: its beneficiary and the perimeter the survey measured. It
  * opens with the plot last looked at on the map, if any, and offers to register it only while its
  * vertices are still the ones looked at; otherwise it offers to look at them on the map first. It
- * closes with the plot to look at, or with nothing when dismissed or once the plot is registered.
+ * closes with a {@link CreatePlotOutcome}, or with nothing when dismissed.
  */
 @Component({
   selector: 'app-create-plot-dialog',
@@ -60,7 +64,7 @@ export class CreatePlotDialog {
   protected readonly previewHeight = PREVIEW_HEIGHT;
   protected readonly documentTypes = LEGAL_DOCUMENT_TYPES;
   protected readonly zone = UTM_ZONE.replace('ZONE_', '');
-  protected readonly dialogRef = inject<DialogRef<DraftedPlot>>(DialogRef);
+  protected readonly dialogRef = inject<DialogRef<CreatePlotOutcome>>(DialogRef);
   private readonly plotsApi = inject(PlotsApi);
   private readonly beneficiariesApi = inject(BeneficiariesApi);
 
@@ -68,11 +72,15 @@ export class CreatePlotDialog {
   private readonly drafted = inject<DraftedPlot | null>(DIALOG_DATA);
   /** The plot as being edited. */
   private readonly plot = signal<NewPlot>(this.drafted?.plot ?? emptyPlot());
+  /** Whether there is a drafted plot on the map to throw away. */
+  protected readonly hasDraft = this.drafted !== null;
   protected readonly reviewed = computed(
     () => this.drafted !== null && sameVertices(this.drafted.plot.vertices, this.plot().vertices),
   );
   /** Whether the plot looked at looked like it crossed a registered one, while it is still the one being edited. */
   protected readonly crossing = computed(() => (this.reviewed() ? this.drafted!.crossing : null));
+  /** Whether the plot being edited is the one refused for crossing registered plots. */
+  protected readonly refused = computed(() => this.reviewed() && this.drafted!.refused);
 
   protected readonly plotForm = form(this.plot, (path) => {
     required(path.documentNumber, { message: 'createPlot.errors.documentRequired' });
@@ -128,12 +136,16 @@ export class CreatePlotDialog {
     try {
       const around = await firstValueFrom(this.plotsApi.within(boundingBoxOf(perimeter)));
       const crossing = around.features.some((registered) => overlaps(perimeter, registered.geometry));
-      this.dialogRef.close({ plot, crossing });
+      this.dialogRef.close({ kind: 'DRAFTED', drafted: { plot, crossing, refused: false } });
     } catch {
       this.crossingCheckFailed.set(true);
     } finally {
       this.checkingCrossings.set(false);
     }
+  }
+
+  protected discard(): void {
+    this.dialogRef.close({ kind: 'DISCARDED' });
   }
 
   protected addVertex(): void {
@@ -163,10 +175,19 @@ export class CreatePlotDialog {
     this.saveFailure.set(null);
     await submit(this.plotForm, async () => {
       try {
-        await firstValueFrom(this.plotsApi.register(this.registration()));
-        this.dialogRef.close();
+        const registered = await firstValueFrom(this.plotsApi.register(this.registration()));
+        this.dialogRef.close({ kind: 'REGISTERED', registered });
       } catch (error) {
-        this.saveFailure.set({ reason: refusalOf(error) });
+        const crossedPlots = crossedPlotsOf(error);
+        if (crossedPlots) {
+          this.dialogRef.close({
+            kind: 'REFUSED',
+            drafted: { plot: this.plot(), crossing: true, refused: true },
+            crossedPlots,
+          });
+        } else {
+          this.saveFailure.set({ reason: refusalOf(error) });
+        }
       }
     });
   }
@@ -193,7 +214,27 @@ export class CreatePlotDialog {
   }
 }
 
+/** What sgt answers a refusal with: which one it is, in its words, and what it involves. */
+interface Refusal {
+  code?: string;
+  message?: string;
+  details?: { overlappingPlots?: string[] };
+}
+
+function refusalBodyOf(error: unknown): Refusal | null {
+  return error instanceof HttpErrorResponse && typeof error.error === 'object' && error.error !== null
+    ? (error.error as Refusal)
+    : null;
+}
+
 /** sgt's own message for a refusal it explains, or null for a failure it does not, such as no connection. */
 function refusalOf(error: unknown): string | null {
-  return error instanceof HttpErrorResponse && typeof error.error?.message === 'string' ? error.error.message : null;
+  const message = refusalBodyOf(error)?.message;
+  return typeof message === 'string' ? message : null;
+}
+
+/** The registered plots sgt refused the plot for crossing, or null when it refused it for something else. */
+function crossedPlotsOf(error: unknown): string[] | null {
+  const refusal = refusalBodyOf(error);
+  return refusal?.code === OVERLAPPING_PLOT ? (refusal.details?.overlappingPlots ?? []) : null;
 }
