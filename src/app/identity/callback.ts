@@ -6,7 +6,8 @@ import { Identity, InteractionRequired } from './identity';
 import { SIGNED_OUT_PARAMETER } from './identity.guard';
 
 /**
- * Where staff redirects back to after sign-in: completes it and continues to the app. A silent
+ * Where staff redirects back to after sign-in: completes it and continues to the app, once the
+ * second, silent trip for the beneficiary registry's token is back too. A silent
  * sign-in that found no staff session goes to the welcome page instead, to sign in from there.
  */
 @Component({
@@ -50,7 +51,9 @@ export class Callback implements OnInit {
         state: params.get('state'),
         error: params.get('error'),
       });
-      await this.router.navigateByUrl(returnUrl, { replaceUrl: true });
+      if (returnUrl !== null) {
+        await this.router.navigateByUrl(returnUrl, { replaceUrl: true });
+      }
     } catch (error) {
       if (error instanceof InteractionRequired) {
         await this.router.navigate(['/welcome'], {

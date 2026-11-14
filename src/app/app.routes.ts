@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { home } from './identity/home';
 import { identityGuard } from './identity/identity.guard';
 
 export const routes: Routes = [
@@ -22,6 +23,17 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [identityGuard({ whenSignedIn: 'pass' })],
-    loadComponent: () => import('./token-details/token-details').then((m) => m.TokenDetails),
+    loadComponent: () => import('./shell/shell').then((m) => m.Shell),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: home },
+      {
+        path: 'map',
+        loadComponent: () => import('./plots/plot-map').then((m) => m.PlotMap),
+      },
+      {
+        path: 'session',
+        loadComponent: () => import('./token-details/token-details').then((m) => m.TokenDetails),
+      },
+    ],
   },
 ];
