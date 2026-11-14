@@ -29,7 +29,8 @@
     "navigation": "Navegación",
     "map": "Mapa",
     "session": "Sesión",
-    "toggleNavigation": "Mostrar u ocultar la navegación"
+    "collapseNavigation": "Contraer menú",
+    "expandNavigation": "Expandir menú"
   },
   "plotMap": {
     "createPlot": "Crear terreno",

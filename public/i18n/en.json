@@ -29,7 +29,8 @@
     "navigation": "Navigation",
     "map": "Map",
     "session": "Session",
-    "toggleNavigation": "Show or hide navigation"
+    "collapseNavigation": "Collapse menu",
+    "expandNavigation": "Expand menu"
   },
   "plotMap": {
     "createPlot": "Create plot",
