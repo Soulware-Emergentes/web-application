@@ -2,7 +2,7 @@ import type { Feature, FeatureCollection, Polygon } from 'geojson';
 import { Cell, keyOf, parentOf } from './plot-cells';
 import { PlotsInView } from './plots-api';
 
-/** As long as sgt lets the browser keep a cell's answer; past it the cell is asked for again. */
+/** How long a loaded cell is trusted; past it the cell is asked for again. */
 const FRESH_FOR_MS = 60_000;
 
 interface LoadedCell {
@@ -17,8 +17,6 @@ interface LoadedCell {
 export class LoadedCells {
   private readonly loaded = new Map<string, LoadedCell>();
   private readonly loading = new Set<string>();
-  /** Cells forgotten and not loaded again since, whose answer the browser may still hold. */
-  private readonly forgotten = new Set<string>();
 
   /** The cells among these that nobody has loaded or is loading, now marked as loading. */
   claimMissing(cells: Cell[]): Cell[] {
@@ -29,7 +27,6 @@ export class LoadedCells {
 
   store(cell: Cell, plots: PlotsInView): void {
     this.loading.delete(keyOf(cell));
-    this.forgotten.delete(keyOf(cell));
     this.loaded.set(keyOf(cell), { plots, loadedAt: Date.now() });
   }
 
@@ -37,20 +34,9 @@ export class LoadedCells {
     this.loading.delete(keyOf(cell));
   }
 
-  /**
-   * Has every loaded cell asked for again, for when a plot has just been registered. Until each
-   * comes back, what it held still shows.
-   */
+  /** Forgets every loaded cell, for when a plot has just been registered, so each is asked for again. */
   forget(): void {
-    this.loaded.forEach((cell, key) => {
-      cell.loadedAt = 0;
-      this.forgotten.add(key);
-    });
-  }
-
-  /** Whether the cell was forgotten, so its answer has to come from sgt rather than the browser's cache. */
-  wasForgotten(cell: Cell): boolean {
-    return this.forgotten.has(keyOf(cell));
+    this.loaded.clear();
   }
 
   /** Every loaded plot in these cells, once each even when it crosses into several. */

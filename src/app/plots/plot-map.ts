@@ -315,7 +315,7 @@ export class PlotMap {
   }
 
   private load(cell: Cell, cells: LoadedCells) {
-    return this.plotsApi.inCell(cell, cells.wasForgotten(cell)).pipe(
+    return this.plotsApi.inCell(cell).pipe(
       tap((plots) => cells.store(cell, plots)),
       catchError(() => {
         cells.release(cell);
