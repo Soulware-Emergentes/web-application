@@ -16,7 +16,7 @@ interface LookupResponse {
   notFound: LegalDocument[];
 }
 
-/** The beneficiary registry, asked directly with the person's own token for it. */
+/** The beneficiary registry, asked through the BFF with the person's own token for it. */
 @Injectable({ providedIn: 'root' })
 export class BeneficiariesApi {
   private readonly http = inject(HttpClient);

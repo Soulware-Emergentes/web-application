@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { REDIRECT_NOTICE_MS, RedirectNotice } from '../shared/redirect-notice';
-import { Identity } from './identity';
+import { Session } from './session';
 
 /** Tells the person they are being taken to sign in, then sends them to staff. */
 @Component({
@@ -16,12 +16,12 @@ import { Identity } from './identity';
   `,
 })
 export class SigningIn implements OnInit {
-  private readonly identity = inject(Identity);
+  private readonly session = inject(Session);
   private readonly route = inject(ActivatedRoute);
 
   ngOnInit(): void {
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
 
-    setTimeout(() => void this.identity.signIn(returnUrl), REDIRECT_NOTICE_MS);
+    setTimeout(() => void this.session.signIn(returnUrl), REDIRECT_NOTICE_MS);
   }
 }

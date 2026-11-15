@@ -1,8 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { Identity } from '../identity/identity';
-import { readClaims } from '../identity/jwt';
+import { Claims, Session } from '../identity/session';
 
 /** Claims holding a time, in seconds since the epoch. */
 const TIME_CLAIMS = new Set(['iat', 'exp', 'nbf', 'auth_time']);
@@ -12,7 +11,7 @@ interface Claim {
   value: string;
 }
 
-/** Shows every claim of the tokens staff issued at sign-in, to check a login end to end. */
+/** Shows every claim of the tokens staff issued at sign-in, as the BFF reads them out, to check a login end to end. */
 @Component({
   selector: 'app-token-details',
   imports: [TranslocoPipe],
@@ -46,12 +45,12 @@ interface Claim {
   `,
 })
 export class TokenDetails {
-  private readonly identity = inject(Identity);
+  private readonly session = inject(Session);
   private readonly router = inject(Router);
 
   protected readonly tokens = computed(() => [
-    { key: 'tokenDetails.idToken', claims: claimsOf(this.identity.idToken()) },
-    { key: 'tokenDetails.accessToken', claims: claimsOf(this.identity.accessToken()) },
+    { key: 'tokenDetails.idToken', claims: claimsOf(this.session.idTokenClaims()) },
+    { key: 'tokenDetails.accessToken', claims: claimsOf(this.session.accessTokenClaims()) },
   ]);
 
   protected signOut(): void {
@@ -59,12 +58,12 @@ export class TokenDetails {
   }
 }
 
-function claimsOf(token: string | null): Claim[] {
-  if (!token) {
+function claimsOf(claims: Claims | null): Claim[] {
+  if (!claims) {
     return [];
   }
 
-  return Object.entries(readClaims(token)).map(([name, value]) => ({
+  return Object.entries(claims).map(([name, value]) => ({
     name,
     value: format(name, value),
   }));

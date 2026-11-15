@@ -12,8 +12,8 @@
     "title": "Signing out",
     "description": "Ending your session. You will need to sign in again to continue."
   },
-  "callback": {
-    "failed": "Sign-in could not be completed.",
+  "signInFailed": {
+    "message": "Sign-in could not be completed.",
     "retry": "Try again"
   },
   "tokenDetails": {

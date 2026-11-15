@@ -17,8 +17,8 @@ export const routes: Routes = [
     loadComponent: () => import('./identity/signing-out').then((m) => m.SigningOut),
   },
   {
-    path: 'callback',
-    loadComponent: () => import('./identity/callback').then((m) => m.Callback),
+    path: 'sign-in-failed',
+    loadComponent: () => import('./identity/sign-in-failed').then((m) => m.SignInFailed),
   },
   {
     path: '',

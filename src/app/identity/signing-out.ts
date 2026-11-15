@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { REDIRECT_NOTICE_MS, RedirectNotice } from '../shared/redirect-notice';
-import { Identity } from './identity';
+import { Session } from './session';
 
 /** Tells the person they are being signed out, then sends them to staff to end the session. */
 @Component({
@@ -15,9 +15,9 @@ import { Identity } from './identity';
   `,
 })
 export class SigningOut implements OnInit {
-  private readonly identity = inject(Identity);
+  private readonly session = inject(Session);
 
   ngOnInit(): void {
-    setTimeout(() => this.identity.signOut(), REDIRECT_NOTICE_MS);
+    setTimeout(() => this.session.signOut(), REDIRECT_NOTICE_MS);
   }
 }

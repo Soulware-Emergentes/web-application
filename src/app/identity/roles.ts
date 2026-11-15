@@ -1,6 +1,5 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { Identity } from './identity';
-import { readClaims } from './jwt';
+import { Session } from './session';
 
 /**
  * The signed-in person's roles in this app, as staff put them in the access token. {@link active}
@@ -9,11 +8,8 @@ import { readClaims } from './jwt';
  */
 @Injectable({ providedIn: 'root' })
 export class Roles {
-  private readonly identity = inject(Identity);
-  private readonly claims = computed(() => {
-    const token = this.identity.accessToken();
-    return token ? readClaims(token) : {};
-  });
+  private readonly session = inject(Session);
+  private readonly claims = computed(() => this.session.accessTokenClaims() ?? {});
 
   readonly active = computed(() => strings(this.claims()['roles'])[0] ?? null);
   readonly eligible = computed(() => strings(this.claims()['eligible_roles']));

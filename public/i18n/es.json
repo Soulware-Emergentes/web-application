@@ -12,8 +12,8 @@
     "title": "Cerrando sesión",
     "description": "Estamos cerrando tu sesión. Tendrás que iniciar sesión de nuevo para continuar."
   },
-  "callback": {
-    "failed": "No se pudo completar el inicio de sesión.",
+  "signInFailed": {
+    "message": "No se pudo completar el inicio de sesión.",
     "retry": "Intentar de nuevo"
   },
   "tokenDetails": {

@@ -1,21 +1,8 @@
-/** Production settings. The staff values are the ones registered for this deployment's client. */
+/** Production settings. */
 export const environment = {
-  staff: {
-    issuer: '',
-    clientId: '',
-    redirectUri: '',
-    postLogoutRedirectUri: '',
-    scope: 'openid profile',
-  },
-  sgt: {
-    // sgt's API in this deployment.
-    api: '',
-  },
-  beneficiarios: {
-    // The beneficiary registry's API in this deployment, and its identifier in staff.
-    api: '',
-    resource: '',
-  },
+  // Every API is reached through the BFF, which serves the SPA too, so on the SPA's own origin.
+  sgt: { api: '/api/sgt' },
+  beneficiarios: { api: '/api/beneficiarios' },
   map: {
     // The basemap this deployment serves itself.
     basemapTiles: '',
