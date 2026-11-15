@@ -36,19 +36,20 @@ export interface RegisteredPlot {
 export class PlotsApi {
   private readonly http = inject(HttpClient);
 
-  /**
-   * @param fresh whether to skip the browser's cache, which keeps a cell's answer for a while, as
-   *              when a plot has just been registered in it
-   */
-  inCell(cell: Cell, fresh = false): Observable<PlotsInView> {
-    return this.within(boundingBoxOf(cell), fresh);
+  inCell(cell: Cell): Observable<PlotsInView> {
+    return this.within(boundingBoxOf(cell));
   }
 
-  /** @param bbox west,south,east,north in degrees */
-  within(bbox: string, fresh = false): Observable<PlotsInView> {
+  /**
+   * Never from the browser's cache, which nothing can empty once a plot is registered: the map
+   * keeps the cells it loaded itself, and forgets them then.
+   *
+   * @param bbox west,south,east,north in degrees
+   */
+  within(bbox: string): Observable<PlotsInView> {
     return this.http.get<PlotsInView>(`${environment.sgt.api}/plots/within`, {
       params: { bbox },
-      cache: fresh ? 'reload' : 'default',
+      cache: 'no-store',
     });
   }
 

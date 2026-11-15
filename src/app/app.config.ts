@@ -10,15 +10,15 @@ import { provideRouter } from '@angular/router';
 import { provideTransloco } from '@jsverse/transloco';
 import { routes } from './app.routes';
 import { acceptLanguageInterceptor } from './i18n/accept-language.interceptor';
-import { bearerTokenInterceptor } from './identity/bearer-token.interceptor';
 import { LANGUAGES, Language } from './i18n/language';
+import { sessionEndedInterceptor } from './identity/session-ended.interceptor';
 import { TranslocoHttpLoader } from './i18n/transloco-loader';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([acceptLanguageInterceptor, bearerTokenInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([acceptLanguageInterceptor, sessionEndedInterceptor])),
     provideTransloco({
       config: {
         availableLangs: [...LANGUAGES],

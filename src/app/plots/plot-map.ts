@@ -35,6 +35,9 @@ const PARALLEL_REQUESTS = 6;
 const REGISTERED_MARK_MS = 6000;
 const NO_MARKED_PLOTS: MarkedPlots = { crossed: [], registered: [] };
 
+/** Where the drafted plot is kept for the life of the tab. */
+const DRAFT_KEY = 'sgt.drafted_plot';
+
 type DraftCheck = 'NONE' | 'CLEAR' | 'CROSSING';
 const DRAFT_LABELS: Record<DraftCheck, string> = {
   NONE: 'plotMap.createPlot',
@@ -159,9 +162,10 @@ export class PlotMap {
 
   /**
    * The plot last looked at from the form, shown on the map until the form closes again with
-   * another or with nothing. Only here, in memory: reloading the page drops it.
+   * another or with nothing. Kept for the life of the tab, so signing in again once the session
+   * has ended, which leaves the page, does not lose it.
    */
-  private readonly draftedPlot = signal<DraftedPlot | null>(null);
+  private readonly draftedPlot = signal<DraftedPlot | null>(restoredDraft());
   /** The drafted plot's perimeter, the same value for as long as its vertices stay the same. */
   private readonly preview = computed(
     () => {
@@ -181,6 +185,7 @@ export class PlotMap {
   protected readonly draftLabel = computed(() => DRAFT_LABELS[this.draftCheck()]);
 
   constructor() {
+    effect(() => keepDraft(this.draftedPlot()));
     effect(() => {
       const map = this.loadedMap();
       if (map) {
@@ -310,7 +315,7 @@ export class PlotMap {
   }
 
   private load(cell: Cell, cells: LoadedCells) {
-    return this.plotsApi.inCell(cell, cells.wasForgotten(cell)).pipe(
+    return this.plotsApi.inCell(cell).pipe(
       tap((plots) => cells.store(cell, plots)),
       catchError(() => {
         cells.release(cell);
@@ -342,4 +347,21 @@ function basemap(): StyleSpecification {
 /** A design token's value, so the map takes the colours the rest of the app uses. */
 function token(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+/** The plot this tab was drafting before it left the page, as to sign in again. */
+function restoredDraft(): DraftedPlot | null {
+  try {
+    return JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? 'null') as DraftedPlot | null;
+  } catch {
+    return null;
+  }
+}
+
+function keepDraft(drafted: DraftedPlot | null): void {
+  if (drafted) {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(drafted));
+  } else {
+    sessionStorage.removeItem(DRAFT_KEY);
+  }
 }

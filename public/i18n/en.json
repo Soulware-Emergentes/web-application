@@ -12,9 +12,20 @@
     "title": "Signing out",
     "description": "Ending your session. You will need to sign in again to continue."
   },
-  "callback": {
-    "failed": "Sign-in could not be completed.",
+  "signInFailed": {
+    "message": "Sign-in could not be completed.",
     "retry": "Try again"
+  },
+  "sessionEnding": {
+    "title": "Your session is about to end",
+    "message": "Time left:",
+    "keepWorking": "Keep working",
+    "signOut": "Sign out now"
+  },
+  "sessionEnded": {
+    "title": "Your session has ended",
+    "message": "For your security, sessions end after a while. Sign in again to continue where you left off.",
+    "signIn": "Sign in again"
   },
   "tokenDetails": {
     "title": "Your session",

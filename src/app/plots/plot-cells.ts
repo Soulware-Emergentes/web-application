@@ -2,8 +2,8 @@ import { LngLatBounds } from 'maplibre-gl';
 
 /**
  * The map split into fixed cells, the slippy-map tiles of one zoom level. Plots are asked for one
- * cell at a time: a cell's bounding box never changes, so the same cell is the same URL and the
- * browser can answer it from its cache.
+ * cell at a time: a cell's bounding box never changes, so a cell loaded once serves every view
+ * it falls in.
  */
 export interface Cell {
   zoom: number;
