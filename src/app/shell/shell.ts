@@ -1,10 +1,13 @@
+import { Dialog } from '@angular/cdk/dialog';
 import { NgOptimizedImage } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { Session } from '../identity/session';
+import { SessionEndedDialog } from '../identity/session-ended-dialog';
 import { Sidebar } from './sidebar';
 
-/** Where a signed-in person works: a sidebar to move between views, and the view. */
+/** Where a signed-in person works: a sidebar to move between views, and the view. It tells them when their session ends. */
 @Component({
   selector: 'app-shell',
   imports: [NgOptimizedImage, RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe],
@@ -71,6 +74,21 @@ import { Sidebar } from './sidebar';
 })
 export class Shell {
   protected readonly sidebar = inject(Sidebar);
+  private readonly dialog = inject(Dialog);
+  private readonly session = inject(Session);
+
+  constructor() {
+    // Over whatever is open, and for good: nothing works again until the person signs in.
+    effect(() => {
+      if (this.session.ended()) {
+        this.dialog.open(SessionEndedDialog, {
+          ariaLabelledBy: SessionEndedDialog.titleId,
+          backdropClass: 'bg-overlay-scrim',
+          disableClose: true,
+        });
+      }
+    });
+  }
 
   protected readonly views = [
     { path: '/map', label: 'shell.map', icon: '/icons/map.svg' },

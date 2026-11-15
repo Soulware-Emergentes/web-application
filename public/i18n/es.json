@@ -16,6 +16,11 @@
     "message": "No se pudo completar el inicio de sesión.",
     "retry": "Intentar de nuevo"
   },
+  "sessionEnded": {
+    "title": "Tu sesión terminó",
+    "message": "Por tu seguridad, las sesiones terminan después de un tiempo. Inicia sesión de nuevo para continuar donde te quedaste.",
+    "signIn": "Iniciar sesión de nuevo"
+  },
   "tokenDetails": {
     "title": "Tu sesión",
     "idToken": "Token de identidad",

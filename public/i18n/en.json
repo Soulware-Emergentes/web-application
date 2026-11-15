@@ -16,6 +16,11 @@
     "message": "Sign-in could not be completed.",
     "retry": "Try again"
   },
+  "sessionEnded": {
+    "title": "Your session has ended",
+    "message": "For your security, sessions end after a while. Sign in again to continue where you left off.",
+    "signIn": "Sign in again"
+  },
   "tokenDetails": {
     "title": "Your session",
     "idToken": "ID token",
