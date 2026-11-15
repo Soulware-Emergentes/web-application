@@ -6,10 +6,14 @@ import { Language } from '../i18n/language';
 /** The claims of a token staff issued, as the BFF reads them out. */
 export type Claims = Record<string, unknown>;
 
-/** What the BFF answers `/bff/me` with: the claims of the person's ID token and of sgt's access token. */
+/**
+ * What the BFF answers `/bff/me` with: the claims of the person's ID token and of sgt's access token,
+ * and how many seconds the login has left.
+ */
 interface Me {
   idToken: Claims;
   accessToken: Claims;
+  expiresIn: number;
 }
 
 /** How a sign-in reaches staff. */
@@ -39,6 +43,8 @@ export class Session {
   readonly isSignedIn = computed(() => !!this.me());
   readonly idTokenClaims = computed(() => this.me()?.idToken ?? null);
   readonly accessTokenClaims = computed(() => this.me()?.accessToken ?? null);
+  /** When the login ends, in milliseconds since the epoch by this browser's clock; null without one. */
+  readonly endsAt = signal<number | null>(null);
   /** Whether the session ended while the person was using the app, which they are told about. */
   readonly ended = signal(false);
 
@@ -52,6 +58,7 @@ export class Session {
         throw error;
       });
       this.me.set(me);
+      this.endsAt.set(me ? Date.now() + me.expiresIn * 1000 : null);
     }
     return this.isSignedIn();
   }

@@ -5,12 +5,13 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { Session } from '../identity/session';
 import { SessionEndedDialog } from '../identity/session-ended-dialog';
+import { SessionEndingNotice } from '../identity/session-ending-notice';
 import { Sidebar } from './sidebar';
 
-/** Where a signed-in person works: a sidebar to move between views, and the view. It tells them when their session ends. */
+/** Where a signed-in person works: a sidebar to move between views, and the view. It warns them before their session ends, and tells them when it has. */
 @Component({
   selector: 'app-shell',
-  imports: [NgOptimizedImage, RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe],
+  imports: [NgOptimizedImage, RouterLink, RouterLinkActive, RouterOutlet, SessionEndingNotice, TranslocoPipe],
   host: { class: 'flex h-screen' },
   template: `
     @let open = sidebar.isOpen();
@@ -70,6 +71,7 @@ import { Sidebar } from './sidebar';
     <div class="min-w-0 flex-1 overflow-auto">
       <router-outlet />
     </div>
+    <app-session-ending-notice />
   `,
 })
 export class Shell {

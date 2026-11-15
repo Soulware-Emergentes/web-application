@@ -16,6 +16,12 @@
     "message": "No se pudo completar el inicio de sesión.",
     "retry": "Intentar de nuevo"
   },
+  "sessionEnding": {
+    "title": "Tu sesión está por terminar",
+    "message": "Tiempo restante:",
+    "keepWorking": "Seguir trabajando",
+    "signOut": "Cerrar sesión ahora"
+  },
   "sessionEnded": {
     "title": "Tu sesión terminó",
     "message": "Por tu seguridad, las sesiones terminan después de un tiempo. Inicia sesión de nuevo para continuar donde te quedaste.",
