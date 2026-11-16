@@ -22,9 +22,18 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "maplibre-gl-worker.mjs",
+                "input": "node_modules/maplibre-gl/dist",
+                "output": "maplibre"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": [
+              "node_modules/maplibre-gl/dist/maplibre-gl.css",
+              "node_modules/@angular/cdk/overlay-prebuilt.css",
+              "src/styles.css"
+            ]
           },
           "configurations": {
             "production": {
@@ -45,13 +54,22 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "web-application:build:production"
